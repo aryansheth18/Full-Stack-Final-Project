@@ -1,0 +1,30 @@
+{
+  "name": "store-rating-platform",
+  "version": "1.0.0",
+  "description": "Full-Stack Store Rating Application with Role-Based Access Control (System Admin, Normal User, Store Owner)",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build": "npm run build --prefix server && npm run build --prefix client",
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "seed": "npm run seed --prefix server",
+    "start": "npm run start --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "fullstack",
+    "react",
+    "express",
+    "prisma",
+    "postgresql",
+    "sqlite",
+    "rbac",
+    "tailwind"
+  ],
+  "author": "Aryan Sheth",
+  "license": "MIT"
+}
