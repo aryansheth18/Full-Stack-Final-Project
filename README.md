@@ -6,7 +6,7 @@
 [![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vercel](https://img.shields.io/badge/Vercel-Ready-000000?logo=vercel&logoColor=white)](https://vercel.com/)
+[![Render](https://img.shields.io/badge/Render-Ready-46E3B7?logo=render&logoColor=black)](https://render.com/)
 
 A production-grade, industry-standard full-stack web application for discovering and rating retail stores with **Role-Based Access Control (RBAC)** for **System Administrators**, **Store Owners**, and **Normal Users**.
 
@@ -158,6 +158,18 @@ Run the end-to-end integration test suite verifying authentication, RBAC, valida
 cd server
 node test-api.js
 ```
+
+---
+
+## ☁️ Deployment Guide (Render - 1-Click Setup)
+
+This repository includes a `render.yaml` blueprint for automatic zero-config deployment:
+
+1. Go to **[Render Dashboard](https://dashboard.render.com/)** and sign in with GitHub.
+2. Click **"New +"** -> **"Blueprint"**.
+3. Connect repository: **`Full-Stack-Final-Project`**.
+4. Render will auto-provision the **Node.js Web Service** and **Free PostgreSQL Database (`storerate-db`)**.
+5. Click **"Apply"** — Render will automatically build the app, run Prisma database migrations, seed initial records, and provide your live production URL!
 
 ---
 
