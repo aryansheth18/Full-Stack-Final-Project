@@ -36,14 +36,17 @@ model Store {
 }
 
 model Rating {
-  id        String   @id @default(uuid())
-  rating    Int      // 1 to 5
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  storeId   String
-  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String    @id @default(uuid())
+  rating         Int       // 1 to 5
+  comment        String?   // Customer optional feedback comment
+  ownerReply     String?   // Store Owner reply to the feedback
+  ownerRepliedAt DateTime?
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeId        String
+  store          Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@unique([userId, storeId])
 }

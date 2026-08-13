@@ -103,8 +103,14 @@ export const updateStoreSchema = z.object({
   ownerId: z.string().nullable().optional(),
 });
 
-// Submit Rating Schema: 1 to 5
+// Submit Rating Schema: 1 to 5 with optional review comment
 export const submitRatingSchema = z.object({
   storeId: z.string().min(1, 'Store ID is required'),
   rating: z.number().int().min(1, 'Rating must be at least 1').max(5, 'Rating cannot exceed 5'),
+  comment: z.string().max(500, 'Comment cannot exceed 500 characters').optional(),
+});
+
+// Store Owner Reply Schema
+export const ownerReplySchema = z.object({
+  reply: z.string().trim().min(1, 'Reply message is required').max(500, 'Reply cannot exceed 500 characters'),
 });

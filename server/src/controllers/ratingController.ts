@@ -8,7 +8,7 @@ export const submitRating = async (req: Request, res: Response) => {
       return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
-    const { storeId, rating } = req.body;
+    const { storeId, rating, comment } = req.body;
 
     const store = await prisma.store.findUnique({
       where: { id: storeId },
@@ -28,11 +28,13 @@ export const submitRating = async (req: Request, res: Response) => {
       },
       update: {
         rating: Number(rating),
+        comment: comment !== undefined ? comment : undefined,
       },
       create: {
         userId: req.user.id,
         storeId,
         rating: Number(rating),
+        comment: comment || null,
       },
       include: {
         store: {
@@ -55,6 +57,7 @@ export const submitRating = async (req: Request, res: Response) => {
       message: 'Rating submitted successfully',
       data: {
         rating: result.rating,
+        comment: result.comment,
         storeId: result.storeId,
         storeName: result.store.name,
         newOverallRating: avg,

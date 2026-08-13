@@ -1,5 +1,6 @@
 # StoreRate Pro - Enterprise Full-Stack Store Rating Web Application
 
+[![CI Pipeline](https://github.com/aryansheth18/Full-Stack-Final-Project/actions/workflows/ci.yml/badge.svg)](https://github.com/aryansheth18/Full-Stack-Final-Project/actions)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express-4.19-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
@@ -17,9 +18,9 @@ The platform includes a **1-Click Test Credentials Selector** on the login page 
 
 | Role | Email Address | Password | Functionalities & Permissions |
 | :--- | :--- | :--- | :--- |
-| 👑 **System Administrator** | `admin@storerating.com` | `Admin@2026!` | Full dashboard KPIs, add/edit/delete users & stores, sortable & filterable user/store management tables, user details modal with store ratings. |
-| 🏪 **Store Owner** | `alexander.hamilton@stores.com` | `Owner@2026!` | Store analytics dashboard, overall store average rating, star rating distribution chart, list of customer reviews with search & sort. |
-| 👤 **Normal User** | `user@storerating.com` | `User@2026!` | Search stores by name & address, submit 1-5 star ratings, modify existing ratings, update password. |
+| 👑 **System Administrator** | `admin@storerating.com` | `Admin@2026!` | Full dashboard KPIs, add/edit/delete users & stores, sortable & filterable user/store management tables, user details modal with store ratings, CSV report export. |
+| 🏪 **Store Owner** | `alexander.hamilton@stores.com` | `Owner@2026!` | Store analytics dashboard, overall store average rating, star rating distribution chart, customer review feedback comments, interactive Owner Reply system, CSV reviews export. |
+| 👤 **Normal User** | `user@storerating.com` | `User@2026!` | Search stores by name & address, submit 1-5 star ratings with optional review comments, modify existing ratings, update password. |
 
 ---
 
@@ -28,7 +29,8 @@ The platform includes a **1-Click Test Credentials Selector** on the login page 
 - **Backend**: Express.js with TypeScript, Clean Architecture, RESTful API design.
 - **Database & ORM**: PostgreSQL / SQLite with Prisma ORM, migrations, and realistic seed data.
 - **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Lucide Icons, React Router v6, Axios with token interceptors.
-- **Security & Validation**: JWT token authentication, bcrypt password hashing, Zod schema validation, Helmet headers, CORS.
+- **Security & Reliability**: `express-rate-limit` brute-force protection, JWT authentication, bcrypt password hashing, Zod schema validation, Helmet headers, React Error Boundary.
+- **DevOps & CI/CD**: GitHub Actions automated pipeline for linting, type-checking, building, and automated end-to-end integration tests.
 
 ---
 
@@ -41,8 +43,11 @@ All validation rules are strictly enforced on both **Frontend** and **Backend**:
 - **Password**: 8–16 characters, must include at least **1 uppercase letter** and **1 special character** (`!@#$%^&*()_+-=[]{};':"|,.<>/?`).
 - **Email**: Standard RFC email format.
 - **Ratings**: Integer values from 1 to 5.
+- **Review Comments**: Optional text feedback up to 500 characters.
+- **Store Owner Replies**: Store owners can post public replies to customer reviews.
 - **Password Eye Button**: Universal toggle button on all password fields across login, register, forgot/reset password, profile, and admin modals.
 - **Admin Delete Controls**: Admin can safely delete users and stores with relational integrity and self-deletion prevention.
+- **CSV Data Export**: 1-click export for Admin User/Store reports and Store Owner customer review logs.
 
 ---
 
@@ -80,6 +85,9 @@ erDiagram
     RATING {
         string id PK
         int rating "1 to 5"
+        string comment "max 500 chars"
+        string ownerReply "max 500 chars"
+        datetime ownerRepliedAt
         string userId FK
         string storeId FK
         datetime createdAt
@@ -91,7 +99,7 @@ erDiagram
 
 ## 📡 REST API Documentation
 
-### 🔐 Authentication & Profile (`/api/auth`)
+### 🔐 Authentication & Profile (`/api/auth` - Rate limited)
 - `POST /api/auth/register`: Register new Normal User (name 20-60 chars, address max 400 chars, password rules).
 - `POST /api/auth/login`: Single login endpoint for all roles.
 - `GET /api/auth/me`: Get current authenticated profile.
@@ -112,45 +120,33 @@ erDiagram
 - `DELETE /api/admin/stores/:id`: Delete store and cascade associated ratings.
 
 ### 🏪 Store Owner (`/api/owner` - Protected: `STORE_OWNER`, `ADMIN`)
-- `GET /api/owner/dashboard`: Store information, overall average score, 1-5 star ratings distribution breakdown, and list of users who submitted reviews.
+- `GET /api/owner/dashboard`: Store information, overall average score, 1-5 star ratings distribution breakdown, customer review feedback comments, and reviewer list.
+- `POST /api/owner/ratings/:ratingId/reply`: Reply directly to a customer review.
 
 ### 👤 Stores & Ratings (`/api/stores` & `/api/ratings`)
 - `GET /api/stores`: Browse stores with search by name/address, sorting, overall rating, and current user's submitted rating.
 - `GET /api/stores/:id`: Single store detail view with ratings breakdown.
-- `POST /api/ratings`: Submit or modify rating (1–5) for a store.
+- `POST /api/ratings`: Submit or modify rating (1–5) and optional comment for a store.
 - `GET /api/ratings/my`: Get all ratings submitted by the logged-in user.
 
 ---
 
 ## 💻 Local Installation & Setup
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) v18+ (Tested on v20 & v24)
-- npm v9+
+```bash
+# 1. Clone repository
+git clone https://github.com/aryansheth18/Full-Stack-Final-Project.git
+cd Full-Stack-Final-Project
 
-### Quick Start (3 Steps)
+# 2. Install dependencies & seed demo database
+npm run install:all
+npm run seed
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/aryansheth18/Full-Stack-Final-Project.git
-   cd Full-Stack-Final-Project
-   ```
-
-2. **Install All Dependencies & Seed Database**:
-   ```bash
-   # Install root, backend, and frontend dependencies
-   npm run install:all
-
-   # Setup database schema and seed demo accounts
-   npm run seed
-   ```
-
-3. **Start Development Servers**:
-   ```bash
-   npm run dev
-   ```
-   - **Frontend**: [http://localhost:5173](http://localhost:5173)
-   - **Backend API**: [http://localhost:5000](http://localhost:5000)
+# 3. Start development servers
+npm run dev
+```
+- **Frontend**: [http://localhost:5173](http://localhost:5173)
+- **Backend API**: [http://localhost:5000](http://localhost:5000)
 
 ---
 
@@ -162,25 +158,6 @@ Run the end-to-end integration test suite verifying authentication, RBAC, valida
 cd server
 node test-api.js
 ```
-
----
-
-## ☁️ Deployment Guide (Vercel)
-
-1. Push code to your GitHub repository:
-   ```bash
-   git add .
-   git commit -m "feat: complete enterprise fullstack store rating platform"
-   git push -u origin main
-   ```
-
-2. Go to [Vercel Dashboard](https://vercel.com/dashboard) and click **"Add New Project"**.
-3. Select your repository `Full-Stack-Final-Project`.
-4. Add Environment Variables:
-   - `JWT_SECRET`: `your_production_secret_key`
-   - `DATABASE_URL`: Your PostgreSQL connection string (e.g. from [Neon.tech](https://neon.tech) or [Supabase](https://supabase.com))
-   - `NODE_ENV`: `production`
-5. Click **Deploy**.
 
 ---
 

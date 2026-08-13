@@ -4,6 +4,8 @@ import { OwnerDashboardData, StoreReview } from '../../types';
 import { StatCard } from '../../components/common/StatCard';
 import { StarRating } from '../../components/common/StarRating';
 import { DataTable, Column } from '../../components/common/DataTable';
+import { Modal } from '../../components/common/Modal';
+import { exportToCsv } from '../../utils/exportCsv';
 import {
   Store as StoreIcon,
   Star,
@@ -14,6 +16,10 @@ import {
   MapPin,
   Mail,
   AlertCircle,
+  Download,
+  MessageSquare,
+  Reply,
+  CheckCircle2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -24,6 +30,12 @@ export const OwnerDashboardPage: React.FC = () => {
   const [ratingFilter, setRatingFilter] = useState<string>('ALL');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Reply Modal State
+  const [replyModalOpen, setReplyModalOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<any>(null);
+  const [replyText, setReplyText] = useState('');
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   const fetchDashboardData = async () => {
     setIsLoading(true);
@@ -52,6 +64,51 @@ export const OwnerDashboardPage: React.FC = () => {
     }
   };
 
+  const handleOpenReplyModal = (review: any) => {
+    setSelectedReview(review);
+    setReplyText(review.ownerReply || '');
+    setReplyModalOpen(true);
+  };
+
+  const handleReplySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReview || !replyText.trim()) return;
+
+    setIsSubmittingReply(true);
+    try {
+      const res = await api.post(`/owner/ratings/${selectedReview.id}/reply`, {
+        reply: replyText.trim(),
+      });
+      if (res.data.success) {
+        toast.success('Reply submitted to customer review!');
+        setReplyModalOpen(false);
+        fetchDashboardData();
+      }
+    } catch (e: any) {
+      const msg = e.response?.data?.message || 'Failed to submit reply';
+      toast.error(msg);
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  };
+
+  const handleExportCsv = () => {
+    if (!data?.ratings || !data.ratings.length) {
+      toast.error('No customer review records to export');
+      return;
+    }
+    const rows = data.ratings.map((r) => ({
+      CustomerName: r.user.name,
+      CustomerEmail: r.user.email,
+      Rating: r.rating,
+      FeedbackComment: r.comment || 'N/A',
+      StoreOwnerReply: r.ownerReply || 'N/A',
+      SubmittedDate: new Date(r.createdAt).toISOString(),
+    }));
+    exportToCsv(`${data.store?.name.replace(/\s+/g, '_')}_Reviews_Report`, rows);
+    toast.success('Customer reviews report exported to CSV!');
+  };
+
   // Filter & Sort reviews in memory
   let reviews = data?.ratings || [];
 
@@ -61,7 +118,8 @@ export const OwnerDashboardPage: React.FC = () => {
       (r) =>
         r.user.name.toLowerCase().includes(q) ||
         r.user.email.toLowerCase().includes(q) ||
-        r.user.address.toLowerCase().includes(q)
+        r.user.address.toLowerCase().includes(q) ||
+        (r.comment && r.comment.toLowerCase().includes(q))
     );
   }
 
@@ -87,32 +145,28 @@ export const OwnerDashboardPage: React.FC = () => {
   const columns: Column<any>[] = [
     {
       key: 'name',
-      header: 'Customer Name',
+      header: 'Customer Reviewer',
       sortable: true,
       render: (r) => (
         <div>
           <p className="font-bold text-slate-900 dark:text-white">{r.user.name}</p>
-          <p className="text-xs text-slate-400 sm:hidden">{r.user.email}</p>
+          <p className="text-xs text-slate-400">{r.user.email}</p>
+          {r.comment && (
+            <div className="mt-1 p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-300 italic border border-slate-100 dark:border-slate-800">
+              "{r.comment}"
+            </div>
+          )}
+          {r.ownerReply && (
+            <div className="mt-1 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-xs text-emerald-800 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/50">
+              <span className="font-bold">Your Reply:</span> "{r.ownerReply}"
+            </div>
+          )}
         </div>
       ),
     },
     {
-      key: 'email',
-      header: 'Email',
-      sortable: true,
-      className: 'hidden sm:table-cell',
-      render: (r) => <span className="font-medium text-xs text-slate-600 dark:text-slate-300">{r.user.email}</span>,
-    },
-    {
-      key: 'address',
-      header: 'Address',
-      sortable: false,
-      className: 'hidden md:table-cell max-w-xs',
-      render: (r) => <p className="truncate text-xs text-slate-500 dark:text-slate-400">{r.user.address}</p>,
-    },
-    {
       key: 'rating',
-      header: 'Rating Submitted',
+      header: 'Rating',
       sortable: true,
       render: (r) => (
         <div className="flex items-center gap-1.5">
@@ -123,9 +177,9 @@ export const OwnerDashboardPage: React.FC = () => {
     },
     {
       key: 'createdAt',
-      header: 'Date Submitted',
+      header: 'Date',
       sortable: true,
-      className: 'text-right',
+      className: 'hidden sm:table-cell',
       render: (r) => (
         <span className="text-xs text-slate-500 dark:text-slate-400">
           {new Date(r.createdAt).toLocaleDateString(undefined, {
@@ -134,6 +188,21 @@ export const OwnerDashboardPage: React.FC = () => {
             day: 'numeric',
           })}
         </span>
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Action',
+      sortable: false,
+      className: 'text-right',
+      render: (r) => (
+        <button
+          onClick={() => handleOpenReplyModal(r)}
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 dark:bg-slate-800 dark:hover:bg-emerald-950/50 dark:text-slate-200 dark:hover:text-emerald-300 transition-colors cursor-pointer"
+        >
+          <Reply className="w-3.5 h-3.5" />
+          <span>{r.ownerReply ? 'Edit Reply' : 'Reply'}</span>
+        </button>
       ),
     },
   ];
@@ -164,7 +233,6 @@ export const OwnerDashboardPage: React.FC = () => {
   }
 
   const { store, stats } = data;
-  const total = stats.totalRatings || 1;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
@@ -213,7 +281,6 @@ export const OwnerDashboardPage: React.FC = () => {
 
       {/* KPI Cards & Rating Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* KPI Stats */}
         <div className="space-y-5">
           <StatCard
             title="Average Score"
@@ -276,6 +343,14 @@ export const OwnerDashboardPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
+            <button
+              onClick={handleExportCsv}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export CSV</span>
+            </button>
+
             <div className="relative w-full sm:w-64">
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
               <input
@@ -312,6 +387,66 @@ export const OwnerDashboardPage: React.FC = () => {
           keyExtractor={(r) => r.id}
         />
       </div>
+
+      {/* Owner Reply Modal */}
+      <Modal
+        isOpen={replyModalOpen}
+        onClose={() => setReplyModalOpen(false)}
+        title="Reply to Customer Review"
+        subtitle={`Response for ${selectedReview?.user?.name || 'Customer'}`}
+        maxWidth="md"
+      >
+        <form onSubmit={handleReplySubmit} className="space-y-4">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-xs space-y-1">
+            <div className="flex items-center gap-2">
+              <StarRating rating={selectedReview?.rating || 5} size="sm" />
+              <span className="font-bold text-slate-900 dark:text-white">
+                {selectedReview?.user?.name}
+              </span>
+            </div>
+            {selectedReview?.comment && (
+              <p className="text-slate-600 dark:text-slate-300 italic pt-1">
+                "{selectedReview.comment}"
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+              Your Public Store Owner Reply
+            </label>
+            <textarea
+              required
+              rows={3}
+              maxLength={500}
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Thank you for visiting our store! We appreciate your feedback and hope to see you again soon..."
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 py-2 px-3 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none resize-none"
+            />
+            <div className="flex justify-end text-[11px] text-slate-400">
+              {replyText.length}/500 chars
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => setReplyModalOpen(false)}
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmittingReply || !replyText.trim()}
+              className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm disabled:opacity-50 cursor-pointer"
+            >
+              {isSubmittingReply ? 'Posting...' : 'Post Reply'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { StatCard } from '../../components/common/StatCard';
 import { DataTable, Column } from '../../components/common/DataTable';
 import { StarRating } from '../../components/common/StarRating';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
+import { exportToCsv } from '../../utils/exportCsv';
 import { AddUserModal } from './AddUserModal';
 import { EditUserModal } from './EditUserModal';
 import { AddStoreModal } from './AddStoreModal';
@@ -22,8 +23,7 @@ import {
   Eye,
   Shield,
   Layers,
-  ArrowUpDown,
-  RefreshCw,
+  Download,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -195,6 +195,38 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
+  const handleExportUsersCsv = () => {
+    if (!users.length) return;
+    const rows = users.map((u) => ({
+      ID: u.id,
+      Name: u.name,
+      Email: u.email,
+      Role: u.role,
+      Address: u.address,
+      StoreOwnerRating: u.storeRating !== null && u.storeRating !== undefined ? u.storeRating : 'N/A',
+      CreatedAt: u.createdAt,
+    }));
+    exportToCsv('StoreRate_Users_Report', rows);
+    toast.success('Users report exported to CSV!');
+  };
+
+  const handleExportStoresCsv = () => {
+    if (!stores.length) return;
+    const rows = stores.map((s) => ({
+      ID: s.id,
+      StoreName: s.name,
+      Email: s.email,
+      Address: s.address,
+      OverallRating: s.rating,
+      TotalReviews: s.totalRatings,
+      OwnerName: s.owner?.name || 'Unassigned',
+      OwnerEmail: s.owner?.email || 'N/A',
+      CreatedAt: s.createdAt,
+    }));
+    exportToCsv('StoreRate_Stores_Report', rows);
+    toast.success('Stores report exported to CSV!');
+  };
+
   const availableOwners = users.filter((u) => u.role === 'STORE_OWNER');
 
   // Columns for Users Table
@@ -280,7 +312,7 @@ export const AdminDashboardPage: React.FC = () => {
               setSelectedDetailUserId(u.id);
               setIsDetailUserOpen(true);
             }}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
@@ -290,7 +322,7 @@ export const AdminDashboardPage: React.FC = () => {
               setSelectedEditUser(u);
               setIsEditUserOpen(true);
             }}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="Edit User"
           >
             <Edit className="w-4 h-4" />
@@ -300,7 +332,7 @@ export const AdminDashboardPage: React.FC = () => {
               setDeleteTarget({ type: 'user', id: u.id, name: u.name });
               setIsDeleteConfirmOpen(true);
             }}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="Delete User"
           >
             <Trash2 className="w-4 h-4" />
@@ -372,7 +404,7 @@ export const AdminDashboardPage: React.FC = () => {
               setSelectedEditStore(s);
               setIsEditStoreOpen(true);
             }}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="Edit Store"
           >
             <Edit className="w-4 h-4" />
@@ -382,7 +414,7 @@ export const AdminDashboardPage: React.FC = () => {
               setDeleteTarget({ type: 'store', id: s.id, name: s.name });
               setIsDeleteConfirmOpen(true);
             }}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="Delete Store"
           >
             <Trash2 className="w-4 h-4" />
@@ -508,7 +540,7 @@ export const AdminDashboardPage: React.FC = () => {
               </h3>
               <button
                 onClick={() => setActiveTab('users')}
-                className="text-xs font-semibold text-indigo-600 hover:underline"
+                className="text-xs font-semibold text-indigo-600 hover:underline cursor-pointer"
               >
                 View all
               </button>
@@ -536,7 +568,7 @@ export const AdminDashboardPage: React.FC = () => {
               </h3>
               <button
                 onClick={() => setActiveTab('stores')}
-                className="text-xs font-semibold text-indigo-600 hover:underline"
+                className="text-xs font-semibold text-indigo-600 hover:underline cursor-pointer"
               >
                 View stores
               </button>
@@ -562,7 +594,6 @@ export const AdminDashboardPage: React.FC = () => {
       {/* Tab: Users Management */}
       {activeTab === 'users' && (
         <div className="space-y-4">
-          {/* Filter and Search Bar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
             <form onSubmit={handleUserSearchSubmit} className="flex items-center gap-2 w-full sm:w-80">
               <div className="relative w-full">
@@ -583,22 +614,31 @@ export const AdminDashboardPage: React.FC = () => {
               </button>
             </form>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Filter className="w-4 h-4 text-slate-400" />
-              <select
-                value={userRoleFilter}
-                onChange={(e) => setUserRoleFilter(e.target.value)}
-                className="text-xs py-2 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+            <div className="flex items-center gap-2.5 w-full sm:w-auto flex-wrap">
+              <button
+                onClick={handleExportUsersCsv}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors cursor-pointer"
               >
-                <option value="ALL">All Roles</option>
-                <option value="ADMIN">Administrators</option>
-                <option value="STORE_OWNER">Store Owners</option>
-                <option value="USER">Normal Users</option>
-              </select>
+                <Download className="w-3.5 h-3.5" />
+                <span>Export CSV</span>
+              </button>
+
+              <div className="flex items-center gap-1.5">
+                <Filter className="w-4 h-4 text-slate-400" />
+                <select
+                  value={userRoleFilter}
+                  onChange={(e) => setUserRoleFilter(e.target.value)}
+                  className="text-xs py-2 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                >
+                  <option value="ALL">All Roles</option>
+                  <option value="ADMIN">Administrators</option>
+                  <option value="STORE_OWNER">Store Owners</option>
+                  <option value="USER">Normal Users</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          {/* Users DataTable */}
           <DataTable
             columns={userColumns}
             data={users}
@@ -615,7 +655,6 @@ export const AdminDashboardPage: React.FC = () => {
       {/* Tab: Stores Management */}
       {activeTab === 'stores' && (
         <div className="space-y-4">
-          {/* Search Bar */}
           <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
             <form onSubmit={handleStoreSearchSubmit} className="flex items-center gap-2 w-full sm:w-80">
               <div className="relative w-full">
@@ -635,9 +674,16 @@ export const AdminDashboardPage: React.FC = () => {
                 Search
               </button>
             </form>
+
+            <button
+              onClick={handleExportStoresCsv}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export CSV</span>
+            </button>
           </div>
 
-          {/* Stores DataTable */}
           <DataTable
             columns={storeColumns}
             data={stores}

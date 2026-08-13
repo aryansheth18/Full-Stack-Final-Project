@@ -34,6 +34,7 @@ export interface Store {
   totalRatings?: number;
   userRating?: number | null;
   userRatingId?: string | null;
+  userComment?: string | null;
   ratings?: StoreReview[];
   createdAt: string;
 }
@@ -41,6 +42,9 @@ export interface Store {
 export interface StoreReview {
   id: string;
   rating: number;
+  comment?: string | null;
+  ownerReply?: string | null;
+  ownerRepliedAt?: string | null;
   userName?: string;
   createdAt: string;
   updatedAt: string;
@@ -72,6 +76,7 @@ export interface AdminDashboardData {
   recentRatings: Array<{
     id: string;
     rating: number;
+    comment?: string | null;
     createdAt: string;
     user: { id: string; name: string; email: string };
     store: { id: string; name: string };
@@ -96,6 +101,9 @@ export interface OwnerDashboardData {
   ratings: Array<{
     id: string;
     rating: number;
+    comment?: string | null;
+    ownerReply?: string | null;
+    ownerRepliedAt?: string | null;
     createdAt: string;
     updatedAt: string;
     user: {

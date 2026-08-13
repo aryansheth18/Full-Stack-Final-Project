@@ -10,6 +10,7 @@ import storeRoutes from './routes/storeRoutes.js';
 import ratingRoutes from './routes/ratingRoutes.js';
 import ownerRoutes from './routes/ownerRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { authLimiter, generalLimiter } from './middleware/rateLimiter.js';
 
 dotenv.config();
 
@@ -37,8 +38,13 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     timestamp: new Date().toISOString(),
     service: 'Store Rating Platform API',
+    version: '1.2.0',
   });
 });
+
+// Apply Rate Limiters
+app.use('/api', generalLimiter);
+app.use('/api/auth', authLimiter);
 
 // API Routes
 app.use('/api/auth', authRoutes);

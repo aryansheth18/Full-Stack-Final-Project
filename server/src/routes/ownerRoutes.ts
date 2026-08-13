@@ -1,12 +1,14 @@
 import { Router } from 'express';
-import { getOwnerDashboard } from '../controllers/ownerController.js';
+import { getOwnerDashboard, replyToRating } from '../controllers/ownerController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import { ownerReplySchema } from '../utils/validators.js';
 
 const router = Router();
 
-// Restricted to STORE_OWNER (or ADMIN)
 router.use(authenticate, authorize(['STORE_OWNER', 'ADMIN']));
 
 router.get('/dashboard', getOwnerDashboard);
+router.post('/ratings/:ratingId/reply', validate(ownerReplySchema), replyToRating);
 
 export default router;
