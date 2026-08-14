@@ -1,12 +1,14 @@
 # StoreRate Pro - Enterprise Full-Stack Store Rating Web Application
 
-[![CI Pipeline](https://github.com/aryansheth18/Full-Stack-Final-Project/actions/workflows/ci.yml/badge.svg)](https://github.com/aryansheth18/Full-Stack-Final-Project/actions)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Render_Active-22c55e?style=for-the-badge&logo=render&logoColor=white)](https://store-rating-platform-2e6k.onrender.com)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express-4.19-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Render](https://img.shields.io/badge/Render-Ready-46E3B7?logo=render&logoColor=black)](https://render.com/)
+
+> 🌐 **Live Production URL:** [**https://store-rating-platform-2e6k.onrender.com**](https://store-rating-platform-2e6k.onrender.com)  
+> 📡 **API Health Endpoint:** [https://store-rating-platform-2e6k.onrender.com/api/health](https://store-rating-platform-2e6k.onrender.com/api/health)
 
 A production-grade, industry-standard full-stack web application for discovering and rating retail stores with **Role-Based Access Control (RBAC)** for **System Administrators**, **Store Owners**, and **Normal Users**.
 
@@ -14,7 +16,7 @@ A production-grade, industry-standard full-stack web application for discovering
 
 ## 🚀 Live Demo Test Accounts
 
-The platform includes a **1-Click Test Credentials Selector** on the login page for instant reviewer testing:
+Visit [**https://store-rating-platform-2e6k.onrender.com**](https://store-rating-platform-2e6k.onrender.com) to access the live application. The platform includes a **1-Click Test Credentials Selector** on the login page for instant reviewer testing:
 
 | Role | Email Address | Password | Functionalities & Permissions |
 | :--- | :--- | :--- | :--- |
