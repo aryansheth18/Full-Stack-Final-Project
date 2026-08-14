@@ -161,15 +161,39 @@ node test-api.js
 
 ---
 
-## ☁️ Deployment Guide (Render - 1-Click Setup)
+## ☁️ Deployment Guide (Render)
 
-This repository includes a `render.yaml` blueprint for automatic zero-config deployment:
+This repository is optimized for deployment on [Render](https://render.com/) with single-service frontend + backend hosting.
 
-1. Go to **[Render Dashboard](https://dashboard.render.com/)** and sign in with GitHub.
-2. Click **"New +"** -> **"Blueprint"**.
-3. Connect repository: **`Full-Stack-Final-Project`**.
-4. Render will auto-provision the **Node.js Web Service** and **Free PostgreSQL Database (`storerate-db`)**.
-5. Click **"Apply"** — Render will automatically build the app, run Prisma database migrations, seed initial records, and provide your live production URL!
+### Method 1: Blueprint Deployment (1-Click)
+1. Sign in to the **[Render Dashboard](https://dashboard.render.com/)** with your GitHub account.
+2. Click **"New +"** (top right) $\rightarrow$ **"Blueprint"**.
+3. Select your repository: **`aryansheth18/Full-Stack-Final-Project`**.
+4. Render will automatically detect [`render.yaml`](file:///c:/Users/gulav/OneDrive/Desktop/Full%20Stack%20Final%20Project/render.yaml) and configure the build commands and environment variables.
+5. Click **"Apply"** and wait for deployment to complete.
+
+### Method 2: Manual Web Service Setup
+1. Go to **[Render Dashboard](https://dashboard.render.com/)** $\rightarrow$ **"New +"** $\rightarrow$ **"Web Service"**.
+2. Connect your GitHub repository: **`aryansheth18/Full-Stack-Final-Project`**.
+3. Configure the following service settings:
+   - **Environment / Runtime**: `Node`
+   - **Branch**: `main`
+   - **Build Command**:
+     ```bash
+     npm install && npm install --prefix server && npm install --prefix client && npm run build --prefix client && cd server && npx prisma generate && npx prisma db push && npm run seed && npx tsc
+     ```
+   - **Start Command**:
+     ```bash
+     cd server && npm start
+     ```
+   - **Instance Type**: `Free`
+4. Add the following **Environment Variables**:
+   - `NODE_ENV` = `production`
+   - `PORT` = `10000`
+   - `DATABASE_URL` = `file:./dev.db`
+   - `JWT_SECRET` = `store_rating_platform_jwt_secret_production_2026`
+   - `JWT_EXPIRES_IN` = `7d`
+5. Click **"Deploy Web Service"**.
 
 ---
 
@@ -178,3 +202,4 @@ This repository includes a `render.yaml` blueprint for automatic zero-config dep
 **Aryan Sheth**  
 - GitHub: [@aryansheth18](https://github.com/aryansheth18)
 - Repository: [https://github.com/aryansheth18/Full-Stack-Final-Project](https://github.com/aryansheth18/Full-Stack-Final-Project)
+
